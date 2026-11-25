@@ -3,7 +3,7 @@ import { BALANCE } from '../src/engine/balance';
 import { CLASSES } from '../src/engine/data/classes';
 import { deriveState, orderForRound } from '../src/engine/engine';
 import { canonicalJson, inputKey, InputSet, isValidInput } from '../src/engine/inputs';
-import { generateMap, isSolvable, minHazardToGoal, startColumns } from '../src/engine/map';
+import { cellIndex, cellPos, generateMap, hexDistance, isSolvable, minHazardToGoal, neighbors, startColumns } from '../src/engine/map';
 import { gameRng, makeRng, roll2d6 } from '../src/engine/rng';
 import { botRoster, makeStartInput, simulateGame } from '../src/engine/simulate';
 import { successChance } from '../src/engine/stats';
@@ -69,24 +69,42 @@ describe('map generation', () => {
     }
   });
 
-  it('has the right shape and roughly the configured blocked share', () => {
-    let blocked = 0;
+  it('is a branching street network: right shape, ruins between streets, dead ends', () => {
+    let road = 0;
     let inner = 0;
+    let deadEnds = 0;
     for (let i = 0; i < 200; i++) {
       const { cells } = generateMap(`shape-${i}`, 4);
       expect(cells).toHaveLength(BALANCE.COLS * BALANCE.ROWS);
       cells.forEach((c, idx) => {
-        const y = Math.floor(idx / BALANCE.COLS);
-        if (y === 0) expect(c.type).toBe('safe');
-        else if (y === BALANCE.ROWS - 1) expect(c.type).toBe('start');
+        const p = cellPos(idx, BALANCE.COLS);
+        if (p.y === 0) expect(c.type).toBe('safe');
+        else if (p.y === BALANCE.ROWS - 1) expect(c.type).toBe('start');
         else {
           inner++;
-          if (c.type === 'blocked') blocked++;
+          if (c.type !== 'ruin') {
+            road++;
+            const links = neighbors(p, BALANCE.COLS, BALANCE.ROWS).filter((q) => cells[cellIndex(q, BALANCE.COLS)]?.type !== 'ruin').length;
+            if (links === 1) deadEnds++;
+          }
         }
+        if (c.type === 'ruin') expect(c.revealed).toBe(true);
       });
     }
-    expect(blocked / inner).toBeGreaterThan(0.06);
-    expect(blocked / inner).toBeLessThan(0.18);
+    expect(road / inner).toBeGreaterThanOrEqual(BALANCE.MAP_ROAD_SHARE_MIN);
+    expect(road / inner).toBeLessThanOrEqual(BALANCE.MAP_ROAD_SHARE_MAX);
+    expect(deadEnds / 200).toBeGreaterThan(0.5);
+  });
+
+  it('hex neighbours are symmetric and distance 1', () => {
+    for (let y = 0; y < BALANCE.ROWS; y++)
+      for (let x = 0; x < BALANCE.COLS; x++) {
+        const p = { x, y };
+        for (const q of neighbors(p, BALANCE.COLS, BALANCE.ROWS)) {
+          expect(hexDistance(p, q)).toBe(1);
+          expect(neighbors(q, BALANCE.COLS, BALANCE.ROWS)).toContainEqual(p);
+        }
+      }
   });
 
   it('start columns are distinct', () => {
@@ -113,7 +131,7 @@ describe('inputs', () => {
   });
 
   it('resolves same-key conflicts identically regardless of arrival order', () => {
-    const a: GameInput = { round: 1, playerId: 'p1', type: 'action', n: 0, payload: { kind: 'move', dir: 'N' } };
+    const a: GameInput = { round: 1, playerId: 'p1', type: 'action', n: 0, payload: { kind: 'move', dir: 'NE' } };
     const b: GameInput = { round: 1, playerId: 'p1', type: 'action', n: 0, payload: { kind: 'wait' } };
     const s1 = new InputSet([a, b]);
     const s2 = new InputSet([b, a]);
@@ -180,7 +198,7 @@ describe('replay determinism', () => {
 
 describe('forced inputs ("Skip, count as Wait")', () => {
   const start = makeStartInput('force-test', roster4);
-  const moves: GameInput[] = roster4.map((r) => ({ round: 1, playerId: r.id, type: 'action', n: 0, payload: { kind: 'move', dir: 'N' } }));
+  const moves: GameInput[] = roster4.map((r) => ({ round: 1, playerId: r.id, type: 'action', n: 0, payload: { kind: 'move', dir: 'NE' } }));
   const force: GameInput = { round: 1, playerId: 'bot2', type: 'force', n: 0, payload: { by: 'bot1' } };
 
   it('replaces a missing action so the round can resolve', () => {

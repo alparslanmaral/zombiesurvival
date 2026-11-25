@@ -10,7 +10,6 @@ export interface PerkDef {
 export interface ClassDef {
   id: ClassId;
   name: string;
-  icon: string;
   tagline: string;
   combat: number;
   evasion: number;
@@ -67,7 +66,6 @@ export const CLASSES: readonly ClassDef[] = [
   {
     id: 'scout',
     name: 'Scout',
-    icon: '🧭',
     tagline: 'Sees the street before the street sees you.',
     combat: 0,
     evasion: 3,
@@ -81,7 +79,6 @@ export const CLASSES: readonly ClassDef[] = [
   {
     id: 'scavenger',
     name: 'Scavenger',
-    icon: '🎒',
     tagline: 'Leaves nothing behind but empty shelves.',
     combat: 2,
     evasion: 2,
@@ -95,7 +92,6 @@ export const CLASSES: readonly ClassDef[] = [
   {
     id: 'guardian',
     name: 'Guardian',
-    icon: '🛡️',
     tagline: 'Walks into the dark so others can walk out.',
     combat: 3,
     evasion: 0,
@@ -109,7 +105,6 @@ export const CLASSES: readonly ClassDef[] = [
   {
     id: 'medic',
     name: 'Medic',
-    icon: '⚕️',
     tagline: 'Keeps the living that way. Mostly.',
     combat: 2,
     evasion: 2,
@@ -123,7 +118,6 @@ export const CLASSES: readonly ClassDef[] = [
   {
     id: 'engineer',
     name: 'Engineer',
-    icon: '🔧',
     tagline: 'Every wall is a door with bad manners.',
     combat: 1,
     evasion: 2,

@@ -1,7 +1,7 @@
 /** Read-only helpers for UI and bots. Pure functions over GameState. */
 import { BALANCE } from './balance';
 import { itemDef } from './data/items';
-import { cellIndex, DIRS, inBounds, isZombieCell, step } from './map';
+import { cellIndex, DIRS, hexDistance, inBounds, isZombieCell, step } from './map';
 import * as S from './stats';
 import type { Dir, EncounterChoice, GameState, PlayerId, PlayerState } from './types';
 
@@ -12,12 +12,10 @@ export function visibleCells(state: GameState, pid: PlayerId | null): Set<number
   const p = pid ? state.players[pid] : undefined;
   if (!p) return out;
   const r = S.vision(p);
-  // Manhattan radius: "adjacent" means the 4 orthogonal neighbours (radius 1).
   for (let dy = -r; dy <= r; dy++)
-    for (let dx = -r; dx <= r; dx++) {
-      if (Math.abs(dx) + Math.abs(dy) > r) continue;
+    for (let dx = -r - 1; dx <= r + 1; dx++) {
       const q = { x: p.pos.x + dx, y: p.pos.y + dy };
-      if (inBounds(q, state.cols, state.rows)) out.add(cellIndex(q, state.cols));
+      if (inBounds(q, state.cols, state.rows) && hexDistance(p.pos, q) <= r) out.add(cellIndex(q, state.cols));
     }
   return out;
 }
@@ -37,7 +35,15 @@ export function isExhausted(p: PlayerState): boolean {
 
 export function legalMoves(state: GameState, p: PlayerState): Dir[] {
   if (isPinned(state, p) || isWinded(state, p) || isExhausted(p)) return [];
-  return DIRS.filter((d) => inBounds(step(p.pos, d), state.cols, state.rows));
+  const seen = visibleCells(state, p.id);
+  return DIRS.filter((d) => {
+    const q = step(p.pos, d);
+    if (!inBounds(q, state.cols, state.rows)) return false;
+    const i = cellIndex(q, state.cols);
+    const c = state.cells[i];
+    if (c?.type === 'ruin') return false;
+    return !(c?.type === 'blocked' && seen.has(i));
+  });
 }
 
 export function usableInPlan(p: PlayerState): PlayerState['inventory'] {
@@ -71,7 +77,9 @@ export function openPathTargets(state: GameState, p: PlayerState): Dir[] {
   if (!canOpenPath(state, p)) return [];
   return DIRS.filter((d) => {
     const q = step(p.pos, d);
-    return inBounds(q, state.cols, state.rows) && state.cells[cellIndex(q, state.cols)]?.type === 'blocked';
+    if (!inBounds(q, state.cols, state.rows)) return false;
+    const t = state.cells[cellIndex(q, state.cols)]?.type;
+    return t === 'blocked' || (t === 'ruin' && BALANCE.ENGINEER_OPEN_RUINS && q.y > 0);
   });
 }
 

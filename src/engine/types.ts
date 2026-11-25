@@ -1,6 +1,7 @@
 export type PlayerId = string;
 export type ClassId = 'scout' | 'scavenger' | 'guardian' | 'medic' | 'engineer';
-export type Dir = 'N' | 'E' | 'S' | 'W';
+/** Hex directions (pointy-top). North is reached via NE or NW. */
+export type Dir = 'NE' | 'E' | 'SE' | 'SW' | 'W' | 'NW';
 export type StatId = 'combat' | 'evasion' | 'scavenging';
 
 export type CellType =
@@ -12,7 +13,10 @@ export type CellType =
   | 'horde'
   | 'event'
   | 'shelter'
-  | 'blocked';
+  /** barricade on a street: impassable, an Engineer can open it */
+  | 'blocked'
+  /** collapsed buildings between streets: impassable, always visible */
+  | 'ruin';
 
 export interface Pos {
   x: number;

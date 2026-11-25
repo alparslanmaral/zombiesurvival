@@ -3,28 +3,46 @@
  */
 export const BALANCE = {
   // map
-  COLS: 7,
-  ROWS: 10,
-  /** relative weights for generated cells (rows 1..ROWS-2) */
+  COLS: 8,
+  ROWS: 11,
+
+  // street network generator (hex map)
+  MAP_TRUNKS: 3,
+  /** weight of a sideways step for trunk roads (NE/NW weigh 4 each) */
+  MAP_TRUNK_LATERAL: 1.2,
+  MAP_BRANCHES_MIN: 5,
+  MAP_BRANCHES_MAX: 8,
+  MAP_SPURS: 4,
+  /** share of inner cells that are streets; maps outside this range are regenerated */
+  MAP_ROAD_SHARE_MIN: 0.4,
+  MAP_ROAD_SHARE_MAX: 0.68,
+  /** contents of dead-end tips: worth the detour */
+  DEAD_END_WEIGHTS: {
+    loot: 50,
+    shelter: 25,
+    event: 15,
+    zombie: 10,
+  },
+  /** relative weights for street cells (rows 1..ROWS-2) */
   CELL_WEIGHTS: {
-    empty: 17,
+    empty: 20,
     loot: 18,
-    zombie: 22,
+    zombie: 24,
     horde: 14,
     event: 10,
     shelter: 7,
-    blocked: 12,
+    blocked: 7,
   },
   /** "The Wall": the rows just below the Safe Zone use these heavier weights */
   WALL_ROWS: 3,
   WALL_WEIGHTS: {
-    empty: 10,
+    empty: 12,
     loot: 8,
-    zombie: 28,
-    horde: 28,
+    zombie: 30,
+    horde: 30,
     event: 4,
     shelter: 8,
-    blocked: 14,
+    blocked: 8,
   },
   /** every start must have a route whose hazard (walker 1, horde 2) is at most this */
   MAX_PATH_HAZARD: 5,
@@ -107,6 +125,10 @@ export const BALANCE = {
   ENGINEER_CRAFT_COOLDOWN: 6,
   ENGINEER_OPEN_PATH_FIRST_ROUND: 1,
   ENGINEER_OPEN_PATH_COOLDOWN: 10,
+  /** Open Path can also breach ruins, creating a new street */
+  ENGINEER_OPEN_RUINS: true,
+  /** bots only open a path if it saves this much route cost beyond the round it takes */
+  BOT_OPEN_PATH_MARGIN: 1,
 
   // consumables
   ADRENALINE_BONUS: 3,

@@ -11,7 +11,6 @@ export type EventEffect =
 export interface EventDef {
   id: string;
   name: string;
-  icon: string;
   text: string;
   success?: string;
   failure?: string;
@@ -22,7 +21,6 @@ export const EVENTS: readonly EventDef[] = [
   {
     id: 'radiation',
     name: 'Radiation Leak',
-    icon: '☢️',
     text: 'A cracked drum hisses in the dark. The air tastes of copper.',
     success: 'The mask fogs. The filter holds.',
     failure: 'Your gums start to bleed.',
@@ -31,14 +29,12 @@ export const EVENTS: readonly EventDef[] = [
   {
     id: 'depot',
     name: 'Abandoned Depot',
-    icon: '🏚️',
     text: 'Shelves, mostly bare. Mostly.',
     effect: { kind: 'freeLoot', draws: 1, bonusDifficulty: 8 },
   },
   {
     id: 'ambush',
     name: 'Ambush',
-    icon: '🩸',
     text: 'They were waiting under the cars.',
     success: 'You are already gone when the hands close.',
     failure: 'Teeth find your calf before you find your footing.',
@@ -47,21 +43,18 @@ export const EVENTS: readonly EventDef[] = [
   {
     id: 'tunnel',
     name: 'Tunnel Shortcut',
-    icon: '🚇',
     text: 'A maintenance tunnel runs north. The tunnel breathes. Something breathes back.',
-    effect: { kind: 'tunnel', rows: 1 },
+    effect: { kind: 'tunnel', rows: 2 },
   },
   {
     id: 'stranger',
     name: 'Dying Stranger',
-    icon: '🫱',
     text: 'He presses a kit into your hands. "Go north." He does not follow.',
     effect: { kind: 'giveItem', item: 'firstaid' },
   },
   {
     id: 'collapse',
     name: 'Collapsed Floor',
-    icon: '🕳️',
     text: 'The floor gives. Concrete is only a promise.',
     success: 'You catch the edge. Something below catches nothing.',
     failure: 'You land hard on what used to be the basement.',
@@ -70,14 +63,12 @@ export const EVENTS: readonly EventDef[] = [
   {
     id: 'radio',
     name: 'Radio Broadcast',
-    icon: '📻',
     text: 'A looped message: "Safe Zone holding. Keep moving." The voice is very old. You mark the streets it names.',
     effect: { kind: 'reveal', rowsAhead: 3, halfWidth: 1 },
   },
   {
     id: 'dogs',
     name: 'Feral Dogs',
-    icon: '🐕',
     text: 'The dogs ate well this year. They want to keep it that way.',
     success: 'The pack breaks. One leaves a collar and a stash behind.',
     failure: 'They take their share of you and vanish.',

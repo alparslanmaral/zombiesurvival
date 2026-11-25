@@ -264,7 +264,7 @@ class Replayer {
     const def = itemDef(defId);
     p.inventory.push({ uid, defId });
     p.stats.itemsFound++;
-    this.log('loot', `${p.name} finds ${def.icon} ${def.name}. ${why}`.trim(), p.id);
+    this.log('loot', `${p.name} finds ${def.name}. ${why}`.trim(), p.id);
     const cap = S.slots(p);
     while (p.inventory.length > cap) {
       // drop the lowest-value item; among ties, the newest goes
@@ -552,12 +552,12 @@ class Replayer {
     this.giveItem(p, 'pipebomb', `${this.round}-${p.id}-craft`, 'Wire, powder, a length of pipe.');
   }
 
-  /** Engineer: clear an adjacent rubble cell for everyone. Takes the round; the Engineer stays put. */
+  /** Engineer: open an adjacent barricade (or breach ruins) for everyone. Takes the round; the Engineer stays put. */
   private openPath(p: PlayerState, dir: Dir): void {
     const s = this.s;
     const target = step(p.pos, dir);
     const c = inBounds(target, s.cols, s.rows) ? s.cells[this.idx(target)] : undefined;
-    if (c?.type !== 'blocked') {
+    if (c?.type !== 'blocked' && !(c?.type === 'ruin' && BALANCE.ENGINEER_OPEN_RUINS)) {
       this.log('info', `${p.name} looks for something to pry open. There is nothing there.`, p.id);
       return;
     }
@@ -576,9 +576,9 @@ class Replayer {
       return;
     }
     const c = s.cells[this.idx(target)];
-    if (c?.type === 'blocked') {
+    if (c?.type === 'blocked' || c?.type === 'ruin') {
       this.reveal(this.idx(target));
-      this.log('move', `${p.name} hits rubble. No way through.`, p.id);
+      this.log('move', c.type === 'ruin' ? `${p.name} climbs the ruins and finds no way down.` : `${p.name} hits a barricade. No way through.`, p.id);
       this.shelter(p);
       return;
     }
@@ -651,7 +651,7 @@ class Replayer {
   private event(p: PlayerState, i: number, depth: number): void {
     const s = this.s;
     const def = eventDef(s.cells[i]?.eventId ?? 'depot');
-    this.log('event', `${def.icon} ${def.name}. ${def.text}`, p.id);
+    this.log('event', `${def.name}. ${def.text}`, p.id);
     const e = def.effect;
     switch (e.kind) {
       case 'radiation':
@@ -688,7 +688,7 @@ class Replayer {
       case 'tunnel': {
         const target = { x: p.pos.x, y: p.pos.y - e.rows };
         const tc = inBounds(target, s.cols, s.rows) ? s.cells[this.idx(target)] : undefined;
-        if (!tc || tc.type === 'blocked' || depth > 3) {
+        if (!tc || tc.type === 'blocked' || tc.type === 'ruin' || depth > 3) {
           this.log('event', 'The tunnel ends in a wall of wet concrete.', p.id);
           return;
         }

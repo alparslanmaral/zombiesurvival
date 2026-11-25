@@ -29,7 +29,7 @@ const act = (round: number, playerId: string, kind: 'wait' | 'move' = 'wait'): G
   playerId,
   type: 'action',
   n: 0,
-  payload: kind === 'wait' ? { kind: 'wait' } : { kind: 'move', dir: 'N' },
+  payload: kind === 'wait' ? { kind: 'wait' } : { kind: 'move', dir: 'NE' },
 });
 
 async function lobbyAndStart(hub: MemoryHub) {

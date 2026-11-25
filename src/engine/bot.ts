@@ -8,11 +8,11 @@ import { cellIndex, cellPos, DIRS, dirBetween, inBounds, isZombieCell, step } fr
 import { makeRng } from './rng';
 import * as S from './stats';
 import type { ActionPayload, Dir, EncounterPayload, GameInput, GameState, PlayerId, PlayerState } from './types';
-import { canOpenPath, encounterOdds, isExhausted, isPinned, isWinded, pendingFor, visibleCells } from './view';
+import { canOpenPath, encounterOdds, isExhausted, isPinned, isWinded, openPathTargets, pendingFor, visibleCells } from './view';
 
 /** Expected-cost pathfinding (Dijkstra) from the player to the Safe Zone over what the bot knows. */
-function planPath(state: GameState, p: PlayerState, known: Set<number>): number[] {
-  const { cols, rows, cells } = state;
+function planPath(state: GameState, p: PlayerState, known: Set<number>, cells = state.cells): { path: number[]; cost: number } {
+  const { cols, rows } = state;
   const n = cells.length;
   const pf = S.successChance(S.stat(p, 'combat'), BALANCE.ZOMBIE_DIFFICULTY);
   const ph = S.successChance(S.stat(p, 'combat'), BALANCE.HORDE_DIFFICULTY);
@@ -24,6 +24,7 @@ function planPath(state: GameState, p: PlayerState, known: Set<number>): number[
   const cost = (i: number): number => {
     const c = cells[i];
     if (!c) return Infinity;
+    if (c.type === 'ruin') return Infinity;
     if (!known.has(i)) return 1.5;
     if (c.type === 'blocked') return Infinity;
     if (isZombieCell(c)) {
@@ -49,7 +50,7 @@ function planPath(state: GameState, p: PlayerState, known: Set<number>): number[
     if (up.y === 0) {
       const path: number[] = [];
       for (let v = u; v !== start && v >= 0; v = prev[v] as number) path.unshift(v);
-      return path;
+      return { path, cost: dist[u] as number };
     }
     for (const d of DIRS) {
       const q = step(up, d);
@@ -64,7 +65,7 @@ function planPath(state: GameState, p: PlayerState, known: Set<number>): number[
       }
     }
   }
-  return [];
+  return { path: [], cost: Infinity };
 }
 
 function healValue(p: PlayerState, uid: string): number {
@@ -99,16 +100,20 @@ export function botAction(state: GameState, pid: PlayerId): ActionPayload {
   if (heal && (p.hp <= 3 || (p.hp <= 5 && !inWave && p.hp + 4 <= S.maxHp(p)))) return withPerk({ kind: 'use', item: heal });
 
   const known = visibleCells(state, pid);
-  const path = planPath(state, p, known);
+  const { path, cost } = planPath(state, p, known);
   const next = path[0];
   if (next === undefined) return withPerk({ kind: 'move', dir: rng.pick(DIRS) });
   const dir = dirBetween(p.pos, cellPos(next, state.cols)) as Dir;
 
-  if (canOpenPath(state, p)) {
-    // open rubble directly north when the planned route has to detour around it
-    const north = step(p.pos, 'N');
-    const ni = inBounds(north, state.cols, state.rows) ? cellIndex(north, state.cols) : -1;
-    if (ni >= 0 && state.cells[ni]?.type === 'blocked' && dir !== 'N' && known.has(ni) && p.pos.y > 1) return withPerk({ kind: 'openPath', dir: 'N' });
+  if (canOpenPath(state, p) && !inWave) {
+    // open a barricade / breach ruins when it shortens the route by enough to pay for the round
+    for (const d of openPathTargets(state, p)) {
+      const q = step(p.pos, d);
+      const qi = cellIndex(q, state.cols);
+      const opened = state.cells.map((c, i) => (i === qi ? { ...c, type: 'empty' as const, cleared: true } : c));
+      const alt = planPath(state, p, new Set([...known, qi]), opened);
+      if (alt.cost + 1 + BALANCE.BOT_OPEN_PATH_MARGIN < cost) return withPerk({ kind: 'openPath', dir: d });
+    }
   }
   return withPerk({ kind: 'move', dir });
 }

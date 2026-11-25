@@ -18,7 +18,7 @@ export function canonicalJson(value: unknown): string {
 }
 
 const TYPES: readonly InputType[] = ['start', 'action', 'enc', 'force', 'next'];
-const DIRS = ['N', 'E', 'S', 'W'];
+const DIRS = ['NE', 'E', 'SE', 'SW', 'W', 'NW'];
 const ID_RE = /^[A-Za-z0-9_-]{1,40}$/;
 
 function isObj(v: unknown): v is Record<string, unknown> {
