@@ -101,7 +101,7 @@ export const CLASSES: readonly ClassDef[] = [
     evasion: 0,
     scavenging: 1,
     hp: 12,
-    passive: '+1 armor. Not winded after beating a single walker. Flee difficulty +1.',
+    passive: '+1 armor. Flee difficulty +1.',
     startPerks: ['iron_skin', 'brawler'],
     startItems: [],
     pool: ['unbreakable', 'cleaver', 'shield_wall'],
