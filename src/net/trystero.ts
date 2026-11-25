@@ -51,6 +51,18 @@ export function buildRtcConfig(env: IceEnv): RTCConfiguration {
   return { iceServers };
 }
 
+/**
+ * Trystero allows one live join per (appId, room) per page. Joins and leaves of
+ * all transports are serialized on this chain so a quick leave→join (React
+ * StrictMode remounts, reconnects) never overlaps.
+ */
+let opChain: Promise<unknown> = Promise.resolve();
+function serialize<T>(op: () => Promise<T>): Promise<T> {
+  const next = opChain.then(op, op);
+  opChain = next.catch(() => undefined);
+  return next;
+}
+
 export class TrysteroTransport implements Transport {
   readonly kind = 'trystero' as const;
   private room: TRoom | null = null;
@@ -65,8 +77,16 @@ export class TrysteroTransport implements Transport {
     private readonly rtcConfig: RTCConfiguration,
   ) {}
 
-  async join(roomCode: string): Promise<void> {
-    await this.leave();
+  join(roomCode: string): Promise<void> {
+    return serialize(() => this.doJoin(roomCode));
+  }
+
+  leave(): Promise<void> {
+    return serialize(() => this.doLeave());
+  }
+
+  private async doJoin(roomCode: string): Promise<void> {
+    await this.doLeave();
     const mod = await STRATEGIES[this.strategy]();
     const room = mod.joinRoom(
       {
@@ -98,7 +118,7 @@ export class TrysteroTransport implements Transport {
     room.onError?.((err) => console.warn(`[trystero] ${err.code}: ${err.message}`));
   }
 
-  async leave(): Promise<void> {
+  private async doLeave(): Promise<void> {
     const room = this.room;
     this.room = null;
     this.sendFn = null;
