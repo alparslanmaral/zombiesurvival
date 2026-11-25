@@ -4,6 +4,7 @@ import { itemDef } from '../../engine/data/items';
 import type { EncounterChoice, EncounterPayload, GameState, Pending, PlayerState } from '../../engine/types';
 import { encounterOdds, usableInEncounter } from '../../engine/view';
 import { pct } from '../format';
+import { Icon } from '../icons';
 
 type EncPending = Extract<Pending, { type: 'enc' }>;
 
@@ -19,6 +20,7 @@ export function EncounterSheet({ state, me, pending, onDecide }: { state: GameSt
   const partner = pending.partner ? state.players[pending.partner] : undefined;
   const dmg = foe === 'horde' ? BALANCE.HORDE_DAMAGE : BALANCE.ZOMBIE_DAMAGE;
 
+  const ICON: Record<EncounterChoice, string> = { fight: 'fight', flee: 'flee', hide: 'hide', team: 'team' };
   const choices: { id: EncounterChoice; label: string; sub: string }[] = [
     ...(partner ? [{ id: 'team' as const, label: `Fight with ${partner.name}`, sub: 'Both roll, best total +1. Share the damage, both get loot.' }] : []),
     { id: 'fight', label: 'Fight', sub: foe === 'horde' && BALANCE.HORDE_HITS > 1 ? 'Win twice to break a horde. Loot if it falls.' : 'Clear the cell, take the loot. Leaves you winded.' },
@@ -33,7 +35,9 @@ export function EncounterSheet({ state, me, pending, onDecide }: { state: GameSt
     <div className="sheet-backdrop">
       <div className="sheet" role="dialog" aria-label="Encounter">
         <div className="row">
-          <span style={{ fontSize: 34 }}>🧟</span>
+          <span className={`foe-badge ${foe}`}>
+            <Icon name={foe} size={40} strokeWidth={1.6} />
+          </span>
           <div className="grow">
             <h2>{foe === 'horde' ? 'Horde' : 'Walker'}</h2>
             <div className="small muted">
@@ -58,7 +62,12 @@ export function EncounterSheet({ state, me, pending, onDecide }: { state: GameSt
                   if (item && !usableInEncounter(me, c.id, foe).some((i) => i.uid === item)) setItem(null);
                 }}
               >
-                <span>{c.label}</span>
+                <span className="row">
+                  <Icon name={ICON[c.id]} size={18} /> {c.label}
+                </span>
+                <span className="odds-bar">
+                  <span style={{ width: `${Math.round(o.chance * 100)}%` }} />
+                </span>
                 <span className="odds">
                   <b>{pct(o.chance)}</b> · {o.auto ? 'auto' : `need ${o.difficulty} (+${o.mod})`}
                 </span>
@@ -73,7 +82,7 @@ export function EncounterSheet({ state, me, pending, onDecide }: { state: GameSt
               const d = itemDef(it.defId);
               return (
                 <button key={it.uid} className={`chip ${item === it.uid ? 'selected' : ''}`} onClick={() => setItem(item === it.uid ? null : it.uid)}>
-                  {d.icon} {d.name}
+                  <Icon name={d.id} size={16} /> {d.name}
                 </button>
               );
             })}

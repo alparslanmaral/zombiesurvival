@@ -9,7 +9,9 @@ import { ActionPanel } from '../components/ActionPanel';
 import { DiceOverlay } from '../components/Dice';
 import { EncounterSheet } from '../components/EncounterSheet';
 import { LogList } from '../components/LogList';
-import { MapGrid } from '../components/MapGrid';
+import { HexMap } from '../components/HexMap';
+import { HitFlash } from '../components/Effects';
+import { Icon } from '../icons';
 import { NetBadge } from '../components/NetBadge';
 import { PlayerCard } from '../components/PlayerCard';
 import { Squad } from '../components/Squad';
@@ -91,19 +93,21 @@ export function Game({ session, snap, code, onLeave }: { session: GameSession; s
         <div className="line1">
           <b>Round {state.round}</b>
           <span className="wave-chip small" title="Outbreak Wave: rows covered, rounds until it advances">
-            🌊 {state.waveRows > 0 ? state.waveRows : '–'}
+            <Icon name="wave" size={16} /> {state.waveRows > 0 ? state.waveRows : '–'}
             {eta !== null && <span className="dim"> · {eta === 0 ? 'rising' : `+1 in ${eta}`}</span>}
           </span>
           <span className="grow" />
           {me && (
-            <span className="hp-chip">
-              ❤️ <span className="mono">{me.hp}</span>
+            <span className={`hp-chip ${me.hp <= 3 ? 'critical' : ''}`}>
+              <Icon name="heart" size={16} /> <span className="mono">{me.hp}</span>
               <span className="dim small">/{S.maxHp(me)}</span>
             </span>
           )}
           <NetBadge snap={snap} compact />
         </div>
-        <div className="status">{status}</div>
+        <div className={`status ${myPending ? 'urgent' : ''}`} key={status}>
+          {status}
+        </div>
       </div>
 
       <div className="content">
@@ -114,7 +118,7 @@ export function Game({ session, snap, code, onLeave }: { session: GameSession; s
 
         {tab === 'map' && (
           <>
-            <MapGrid state={state} viewer={me ? myId : null} targets={targets} chosen={chosenCell} onPick={pick} />
+            <HexMap state={state} viewer={me ? myId : null} targets={targets} chosen={chosenCell} onPick={pick} />
             {me ? (
               state.phase === 'plan' ? (
                 <ActionPanel
@@ -181,14 +185,16 @@ export function Game({ session, snap, code, onLeave }: { session: GameSession; s
       <nav className="tabs">
         {(
           [
-            ['map', '🗺️', 'Map'],
-            ['pack', '🎒', 'Pack'],
-            ['log', '📜', 'Log'],
-            ['squad', '👥', 'Squad'],
+            ['map', 'map', 'Map'],
+            ['pack', 'pack', 'Pack'],
+            ['log', 'log', 'Log'],
+            ['squad', 'squad', 'Squad'],
           ] as const
         ).map(([id, ico, label]) => (
           <button key={id} className={tab === id ? 'active' : ''} onClick={() => setTab(id)}>
-            <span className="ico">{ico}</span>
+            <span className="ico">
+              <Icon name={ico} size={22} />
+            </span>
             {label}
             {id === 'squad' && offlinePending > 0 && <span className="badge">{offlinePending}</span>}
           </button>
@@ -197,6 +203,7 @@ export function Game({ session, snap, code, onLeave }: { session: GameSession; s
 
       {me && myPending?.type === 'enc' && <EncounterSheet key={`${state.round}-${myPending.cell}`} state={state} me={me} pending={myPending} onDecide={decide} />}
       <DiceOverlay state={state} viewer={myId} />
+      {me && <HitFlash hp={me.hp} />}
     </div>
   );
 }

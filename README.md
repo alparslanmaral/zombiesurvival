@@ -4,7 +4,7 @@
 
 An online, turn-based, dice-driven board game for 2–4 friends, played in the browser
 (made for phones). A zombie outbreak has swallowed the City. Pick a class, push north
-through a fogged grid, loot, fight, flee or hide, and be the first into the Safe Zone.
+through a branching, fogged hex map of ruined streets, loot, fight, flee or hide, and be the first into the Safe Zone.
 A game takes about 15 rounds / 30 minutes.
 
 - **No backend.** A static site on GitHub Pages; players connect peer-to-peer over WebRTC

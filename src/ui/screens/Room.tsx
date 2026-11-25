@@ -33,7 +33,7 @@ function NamePrompt({ onName }: { onName: (n: string) => void }) {
       }}
     >
       <div className="title">
-        <h1>Who goes there?</h1>
+        <h1 className="glitch" data-text="Who goes there?">Who goes there?</h1>
         <p>A friend sent you a road out. Give a name.</p>
       </div>
       <input className="input" name="name" maxLength={24} autoFocus placeholder="Your name" />

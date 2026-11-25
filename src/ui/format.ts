@@ -2,31 +2,8 @@ import { itemDef } from '../engine/data/items';
 import { perkDef } from '../engine/data/classes';
 import type { ActionPayload, Cell, Dir, GameState, PlayerState } from '../engine/types';
 
-export const DIR_ARROW: Record<Dir, string> = { N: '↑', E: '→', S: '↓', W: '←' };
-export const DIR_NAME: Record<Dir, string> = { N: 'north', E: 'east', S: 'south', W: 'west' };
-
-export function cellGlyph(c: Cell): string {
-  switch (c.type) {
-    case 'safe':
-      return '🚁';
-    case 'start':
-      return '🏙️';
-    case 'empty':
-      return '';
-    case 'loot':
-      return '📦';
-    case 'zombie':
-      return c.cleared ? '🦴' : '🧟';
-    case 'horde':
-      return c.cleared ? '🦴' : '🧟';
-    case 'event':
-      return '❓';
-    case 'shelter':
-      return '⛺';
-    case 'blocked':
-      return '🧱';
-  }
-}
+export const DIR_ARROW: Record<Dir, string> = { NE: '↗', E: '→', SE: '↘', SW: '↙', W: '←', NW: '↖' };
+export const DIR_NAME: Record<Dir, string> = { NE: 'north-east', E: 'east', SE: 'south-east', SW: 'south-west', W: 'west', NW: 'north-west' };
 
 export function cellName(c: Cell): string {
   switch (c.type) {
@@ -47,7 +24,9 @@ export function cellName(c: Cell): string {
     case 'shelter':
       return 'Shelter';
     case 'blocked':
-      return 'Rubble';
+      return 'Barricade';
+    case 'ruin':
+      return 'Ruins';
   }
 }
 

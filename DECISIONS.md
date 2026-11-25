@@ -80,13 +80,13 @@ added to reach the 14–18 target while keeping the core tension:
     start) removes unwinnable horde walls.
 21. **Flee costs stamina, and stopping in a cell you slipped through re-engages you.** Without
     this, Evasion was strictly the best stat and Scouts dominated.
-22. **Fog uses orthogonal adjacency** (Manhattan radius), which matches 4-directional movement
-    and "adjacent" in the brief.
+22. **Fog uses adjacency** (hex distance 1, Scout 2). *Superseded by the hex map (32–34);
+    on the original square grid this was Manhattan distance.*
 23. **Wave cap and mercy:** the Wave covers at most 4 rows, never knocks anyone out by itself
     (stops at 1 HP) and skips players on the round they wake. Without this, late games could
     trap players in an endless knockout loop.
-24. **Engineer Open Path clears adjacent rubble (for everyone) and takes the round**; it no
-    longer lets the Engineer walk through zombies. The original version alone added ~14
+24. **Engineer Open Path opens an adjacent obstacle for everyone and takes the round** (see 36
+    for the hex version); it no longer lets the Engineer walk through zombies. The original version alone added ~14
     percentage points of win rate.
 25. **Class tweaks:** Scavenger 2/2/3 + starting Crowbar, Medic 2/2/1 + starting First Aid Kit
     and +1 rest healing, Scout starting perks are Low Profile (hide −2) / Rooftop Eyes (+1 vision).
@@ -99,12 +99,36 @@ added to reach the 14–18 target while keeping the core tension:
     12 s per encounter decision, 2.5 s per dice animation) and gives ~15 minutes for bots.
     Humans talking over voice chat will be slower; ~25–30 min is realistic.
 
+## Hex map (v2)
+
+32. **Pointy-top hexes in odd-r offset coordinates.** The board stays portrait-shaped for
+    phones, and north stays one step per row (NE/NW), so path lengths remain comparable to
+    the square grid. Neighbours, hex distance and fog all live in `map.ts` / `view.ts`.
+33. **The map is a street network** (trunks + side streets + dead-end spurs, the rest ruins)
+    so the race has real route choices: forks, loops, detours to dead-end rewards. Ruins are
+    a separate cell type from barricades: ruins are always visible and shape the network;
+    barricades sit on streets, are hidden by fog and can be opened.
+34. **Street layout is public, contents are fogged.** Seeing the forks makes planning
+    meaningful; not knowing what waits on them keeps the tension.
+35. **Map grew to 8×11.** With branching streets the 7×10 board averaged ~13.4 rounds; one
+    extra row brings it back to ~14.8 while the board still fits a phone screen with the
+    action panel below it.
+36. **Engineer Open Path also breaches ruins** (one adjacent hex, takes the round, cooldown
+    10): on a street map, cutting a new street is the Engineer's identity. Bots only use it
+    when it shortens their route by more than the round it costs. Engineer win rate stays ~27%.
+
 ## UI
 
-29. **Tap-to-move plus a d-pad.** Adjacent legal cells light up on the map; the d-pad, Wait,
-    items and Confirm sit in the lower half of the screen for one-handed play. The cell size
-    is computed so the 10-row map and the action panel fit on an ~844 px tall phone.
+29. **Tap-to-move plus a hex pad.** Adjacent legal hexes glow on the map; a 6-way hex pad,
+    Wait, items and Confirm sit in the lower half of the screen for one-handed play. The SVG
+    board scales to the viewport so the board and the action panel share an ~844 px phone screen.
 30. **Dice animation only for new rolls.** Rolls present on mount (resume) are not replayed;
     after a long absence only the last 4 are shown. Tap to skip.
 31. **Plan choices stay hidden until everyone is in.** The data is technically visible to
     any client (no anti-cheat), but the UI only shows actions from the resolve phase on.
+37. **SVG icons, no emoji.** Emoji render differently on every phone and clash with a
+    designed look. A small hand-drawn stroke icon set (`src/ui/icons.tsx`) covers cells,
+    classes, all 22 items, the 8 events and the UI; the engine's data no longer carries icons.
+38. **Ember-and-blood theme.** Red dominates through glows and accents, not large flat areas:
+    backgrounds are warm near-blacks and body text is a warm off-white with high contrast.
+    Teal marks safety so it reads instantly against the red.

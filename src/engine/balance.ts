@@ -10,12 +10,12 @@ export const BALANCE = {
   MAP_TRUNKS: 3,
   /** weight of a sideways step for trunk roads (NE/NW weigh 4 each) */
   MAP_TRUNK_LATERAL: 1.2,
-  MAP_BRANCHES_MIN: 5,
-  MAP_BRANCHES_MAX: 8,
+  MAP_BRANCHES_MIN: 4,
+  MAP_BRANCHES_MAX: 7,
   MAP_SPURS: 4,
   /** share of inner cells that are streets; maps outside this range are regenerated */
-  MAP_ROAD_SHARE_MIN: 0.4,
-  MAP_ROAD_SHARE_MAX: 0.68,
+  MAP_ROAD_SHARE_MIN: 0.35,
+  MAP_ROAD_SHARE_MAX: 0.55,
   /** contents of dead-end tips: worth the detour */
   DEAD_END_WEIGHTS: {
     loot: 50,

@@ -6,6 +6,7 @@ import { Home } from './ui/screens/Home';
 import { Room } from './ui/screens/Room';
 import { makeRoomCode } from './session/session';
 import { markRoom } from './ui/useSession';
+import { Embers } from './ui/components/Effects';
 
 export function App() {
   const route = useRoute();
@@ -32,8 +33,15 @@ export function App() {
   };
 
   return (
-    <div className="app">
+    <>
+      <div className="backdrop" aria-hidden>
+        <div className="vignette" />
+        <div className="grain" />
+      </div>
+      <Embers />
+      <div className="app">
       {route.name === 'home' ? <Home me={me} onName={updateName} /> : <Room key={route.code} code={route.code} me={me} onName={updateName} />}
-    </div>
+      </div>
+    </>
   );
 }

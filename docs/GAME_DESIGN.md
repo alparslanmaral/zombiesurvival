@@ -11,32 +11,41 @@ Balance is verified by `npm run sim` (1000 four-bot games).
 
 ## 1. Map
 
-- 7 columns × 10 rows, square grid, 4-directional movement.
-- Row 9 (bottom) is the City: start row, always open. Players start in different columns.
-- Row 0 (top) is the Safe Zone. Entering any Safe Zone cell wins the game.
-- Rows 4–8 are generated from the seed with the base weights; rows 1–3 ("The Wall", the
-  dead crowding the Safe Zone's fences) use heavier weights:
+- **Hex grid**, 8 columns × 11 rows of pointy-top hexes (odd rows shifted half a hex).
+  Six directions: NE, E, SE, SW, W, NW. North is reached via NE or NW.
+- Bottom row: the City (start row, always open). Players start in different columns.
+- Top row: the Safe Zone. Entering any Safe Zone hex wins the game.
+- The rows in between are a **street network**, not an open field:
+  - 3 *trunk roads* wander north from the City to the Safe Zone,
+  - 4–7 *side streets* branch off them; some loop back into another road (alternative
+    routes), some just stop,
+  - 4 *spurs*: short alleys that dead-end in the ruins, usually holding loot, a shelter or
+    an event (worth the detour, or not),
+  - everything else is **ruins**: impassable and always visible.
+  - Streets make up 35–55% of the inner hexes; maps outside that range are regenerated.
+- Street hexes get content by weight (rows 1–3 are "The Wall", the dead crowding the fences):
 
-| Cell      | Base | Wall | Notes |
-|-----------|-----:|-----:|-------|
-| Empty     | 17   | 10   | |
-| Loot      | 18   | 8    | first visitor draws items |
-| Zombie    | 22   | 28   | walker: difficulty 8, 3 damage |
-| Horde     | 14   | 28   | difficulty 11, 4 damage, must be beaten twice |
-| Event     | 10   | 4    | one-shot event from the event table |
-| Shelter   | 7    | 8    | +3 HP once per player per shelter |
-| Blocked   | 12   | 14   | rubble, impassable |
+| Street content | Base | Wall | Dead end |
+|---|---:|---:|---:|
+| Empty     | 20 | 12 | – |
+| Loot      | 18 | 8  | 50 |
+| Zombie    | 24 | 30 | 10 |
+| Horde     | 14 | 30 | – |
+| Event     | 10 | 4  | 15 |
+| Shelter   | 7  | 8  | 25 |
+| Barricade | 7  | 8  | – |
 
-- The generator retries deterministically (`attempt` is part of the hash) until:
-  1. a BFS confirms every start cell can reach the Safe Zone, and
-  2. every start has a route whose hazard (walker = 1, horde = 2) is at most 5.
+- The generator retries deterministically until (1) a BFS confirms every start can reach
+  the Safe Zone, (2) every start has a route with hazard ≤ 5 (walker 1, horde 2), and
+  (3) at least two streets enter the top row.
 
 ## 2. Fog of war
 
-- A player sees cell types in the 4 orthogonally adjacent cells (Manhattan radius 1).
-  Scout: radius 2. Flashlight / perks add +1.
-- The first player to enter a cell reveals it for everyone; revealed cells stay revealed.
-- Fog is presentation only. There is no anti-cheat; the whole map is in every client.
+- The **street layout is public** (old city maps): everyone sees where the roads, forks and
+  dead ends are. What is *on* a street is hidden.
+- A player sees street contents within hex distance 1 (Scout: 2; Flashlight and perks +1).
+- The first player to enter a hex reveals it for everyone; revealed hexes stay revealed.
+- Fog is presentation only. There is no anti-cheat.
 
 ## 3. Round flow
 
@@ -126,7 +135,7 @@ player closest to the Safe Zone wins (ties: more HP).
 | Scavenger | 2 | 2 | 3 | 10 | Starts with a Crowbar; easier second draw; may find a third |
 | Guardian | 3 | 0 | 1 | 12 | +1 armor; flee difficulty +1 |
 | Medic | 2 | 2 | 1 | 10 | Starts with a First Aid Kit; healing items ×2; rest heals +1; heals partner after a team fight |
-| Engineer | 1 | 2 | 2 | 10 | Craft a Pipe Bomb on a rest round (cooldown 6); Open Path: spend a round clearing adjacent rubble for everyone (cooldown 10) |
+| Engineer | 1 | 2 | 2 | 10 | Craft a Pipe Bomb on a rest round (cooldown 6); Open Path: spend a round tearing open an adjacent barricade or ruin, creating a new street for everyone (cooldown 10) |
 
 Each class picks 1 of 2 starting perks in the lobby. Every 3 clears (zombie cells cleared
 by fighting) a player chooses 1 of 2 random perks from their class pool (3 perks), padded
@@ -145,6 +154,18 @@ and fight together. Actions are plain data, so PvP actions can be added later.
 
 ## 14. Balance snapshot (`npm run sim`, 1000 four-player bot games)
 
-- Average 14.7 rounds (min 10), 2 players ≈ 17, 3 players ≈ 15.5.
+- Average 14.8 rounds (min 10), 2 players ≈ 17, 3 players ≈ 15.8.
 - Win rate per class (per appearance; 4 of 5 classes per game, fair share 25%):
-  Scout ~25%, Scavenger ~23%, Guardian ~24%, Medic ~24%, Engineer ~29%.
+  Scout ~23%, Scavenger ~24%, Guardian ~26%, Medic ~25%, Engineer ~27%.
+
+## 15. Look and feel
+
+- Ember-and-blood palette: warm near-black backgrounds, ember orange for interaction,
+  blood red for danger, a cold teal for the Safe Zone and healing. Saturated colour is kept
+  to small glowing details so long sessions stay comfortable.
+- SVG everything: the hex board and a hand-drawn icon set (cells, classes, all items,
+  events, UI). No emoji.
+- Motion: drifting embers and film grain, hexes popping in as they are revealed, pulsing
+  zombie hexes, a marching Outbreak Wave front, tokens sliding between hexes with trails,
+  floating damage/heal numbers, screen flash and shake when you are hit, a dice tumble,
+  and a glitching title. Everything respects `prefers-reduced-motion`.

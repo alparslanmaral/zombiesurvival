@@ -5,6 +5,7 @@ import { MAX_NAME_LENGTH } from '../../session/protocol';
 import { netMode, type Identity } from '../net';
 import { goRoom } from '../router';
 import { markRoom } from '../useSession';
+import { Icon } from '../icons';
 
 export function Home({ me, onName }: { me: Identity; onName: (n: string) => void }) {
   const [name, setName] = useState(me.name);
@@ -33,7 +34,10 @@ export function Home({ me, onName }: { me: Identity; onName: (n: string) => void
   return (
     <div className="screen">
       <div className="title">
-        <h1>{GAME_TITLE}</h1>
+        <Icon name="emblem" size={68} className="title-mark" strokeWidth={1.3} />
+        <h1 className="glitch" data-text={GAME_TITLE}>
+          {GAME_TITLE}
+        </h1>
         <p>{GAME_TAGLINE}</p>
       </div>
 
@@ -51,7 +55,7 @@ export function Home({ me, onName }: { me: Identity; onName: (n: string) => void
       </div>
 
       <button className="btn primary block" disabled={!validName} onClick={create}>
-        Create a room
+        <Icon name="flag" size={18} /> Create a room
       </button>
 
       <div className="divider">or join</div>
@@ -75,7 +79,7 @@ export function Home({ me, onName }: { me: Identity; onName: (n: string) => void
       </div>
 
       <button className="btn ghost block" disabled={!validName} onClick={solo}>
-        Solo run against 3 bots
+        <Icon name="skull" size={18} /> Solo run against 3 bots
       </button>
 
       <p className="dim tiny center">

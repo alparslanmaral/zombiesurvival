@@ -1,4 +1,20 @@
-import type { GameState, LogEntry } from '../../engine/types';
+import type { GameState, LogEntry, LogKind } from '../../engine/types';
+import { Icon } from '../icons';
+
+const KIND_ICON: Record<LogKind, string> = {
+  info: 'log',
+  move: 'arrow',
+  encounter: 'fight',
+  loot: 'loot',
+  event: 'event',
+  damage: 'heart',
+  heal: 'medic',
+  wave: 'wave',
+  ko: 'ko',
+  win: 'flag',
+  round: 'dice',
+  perk: 'star',
+};
 
 export function LogList({ state, limit }: { state: GameState; limit?: number }) {
   const entries = limit ? state.log.slice(-limit) : state.log;
@@ -17,8 +33,9 @@ export function LogList({ state, limit }: { state: GameState; limit?: number }) 
             .filter((e) => e.kind !== 'round' || round === 1)
             .reverse()
             .map((e) => (
-              <div key={e.id} className={`entry ${e.kind}`}>
-                {e.text}
+              <div key={`${e.id}|${e.text}`} className={`entry ${e.kind}`}>
+                <Icon name={e.roll ? 'dice' : KIND_ICON[e.kind]} size={14} className="entry-ic" />
+                <span>{e.text}</span>
                 {e.roll && (
                   <span className="mini-dice">
                     [{e.roll.dice[0]}+{e.roll.dice[1]}

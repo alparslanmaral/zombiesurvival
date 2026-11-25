@@ -123,7 +123,7 @@ export const CLASSES: readonly ClassDef[] = [
     evasion: 2,
     scavenging: 2,
     hp: 10,
-    passive: 'Craft (rest round): build a Pipe Bomb. Open Path: spend a round clearing adjacent rubble for everyone.',
+    passive: 'Craft (rest round): build a Pipe Bomb. Open Path: spend a round tearing open an adjacent barricade or ruin, for everyone.',
     startPerks: ['tinkerer', 'rigger'],
     startItems: [],
     pool: ['scrap_armor', 'lockpick', 'spring_trap'],

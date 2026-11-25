@@ -6,6 +6,7 @@ import { perkName } from '../format';
 import { goHome, roomLink } from '../router';
 import { perkDef } from '../../engine/data/classes';
 import { NetBadge } from '../components/NetBadge';
+import { Icon } from '../icons';
 
 export function Lobby({ session, snap, code }: { session: GameSession; snap: SessionSnapshot; code: string }) {
   const me = snap.me;
@@ -34,7 +35,7 @@ export function Lobby({ session, snap, code }: { session: GameSession; snap: Ses
     <div className="screen">
       <div className="row">
         <button className="btn small ghost" onClick={goHome}>
-          ← Leave
+          <Icon name="back" size={16} /> Leave
         </button>
         <div className="grow" />
         <NetBadge snap={snap} />
@@ -45,6 +46,7 @@ export function Lobby({ session, snap, code }: { session: GameSession; snap: Ses
           <h2>Room code</h2>
           <div className="room-code">{code}</div>
           <button className="btn block" onClick={share}>
+            <Icon name="link" size={18} />{' '}
             {copied ? 'Link copied' : 'Share invite link'}
           </button>
           <p className="dim tiny" style={{ wordBreak: 'break-all' }}>
@@ -65,7 +67,7 @@ export function Lobby({ session, snap, code }: { session: GameSession; snap: Ses
               {p.playerId === me.playerId && <span className="dim"> (you)</span>}
               {p.host && <span className="dim tiny"> · host</span>}
             </span>
-            <span className="small muted">{p.classId ? `${classDef(p.classId).icon} ${classDef(p.classId).name}` : 'choosing…'}</span>
+            <span className="small muted row">{p.classId ? (<><Icon name={p.classId} size={16} /> {classDef(p.classId).name}</>) : 'choosing…'}</span>
             <span className={p.ready ? 'ok-text small' : 'dim small'}>{p.ready ? 'Ready' : '…'}</span>
           </div>
         ))}
@@ -83,7 +85,9 @@ export function Lobby({ session, snap, code }: { session: GameSession; snap: Ses
                 className={`btn class-card ${me.classId === c.id ? 'selected' : ''}`}
                 onClick={() => session.setLobby({ classId: c.id, ready: false })}
               >
-                <span className="icon">{c.icon}</span>
+                <span className="icon">
+                  <Icon name={c.id} size={30} />
+                </span>
                 <span className="name">
                   {c.name} {taken.length > 0 && <span className="taken">· also {taken.join(', ')}</span>}
                 </span>

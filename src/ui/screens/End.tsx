@@ -4,6 +4,7 @@ import type { GameSession } from '../../session/session';
 import { makeRoomCode } from '../../session/session';
 import { goHome, goRoom } from '../router';
 import { markRoom } from '../useSession';
+import { Icon } from '../icons';
 
 export function End({ state, session }: { state: GameState; session: GameSession }) {
   const winner = state.winner ? state.players[state.winner] : undefined;
@@ -26,8 +27,9 @@ export function End({ state, session }: { state: GameState; session: GameSession
 
   return (
     <div className="screen">
-      <div className="title">
-        <h1 style={{ fontSize: 30 }}>{iWon ? 'You made it' : winner ? `${winner.name} made it` : 'Silence'}</h1>
+      <div className="title end-title">
+        <Icon name={iWon ? 'flag' : winner ? 'skull' : 'radio'} size={54} className={iWon ? 'safe-text glow-safe' : 'danger-text glow-red'} />
+        <h1 className="glitch" style={{ fontSize: 30 }}>{iWon ? 'You made it' : winner ? `${winner.name} made it` : 'Silence'}</h1>
         <p>
           {state.winReason === 'timeout'
             ? 'Nobody reached the gate. The one who got closest gets the story.'
@@ -55,8 +57,10 @@ export function End({ state, session }: { state: GameState; session: GameSession
               <tr key={p.id}>
                 <td>
                   <span className="dot" style={{ background: p.color, marginRight: 6 }} />
-                  {p.id === state.winner ? '🏁 ' : ''}
-                  {p.name} <span className="dim tiny">{classDef(p.classId).icon}</span>
+                  {p.id === state.winner && <Icon name="flag" size={14} className="safe-text" />} {p.name}{' '}
+                  <span className="dim tiny" title={classDef(p.classId).name}>
+                    <Icon name={p.classId} size={13} />
+                  </span>
                 </td>
                 <td>{p.stats.zombiesCleared}</td>
                 <td>{p.stats.itemsFound}</td>
